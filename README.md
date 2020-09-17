@@ -11,7 +11,7 @@ Note: the program does not work at the moment.
 Note: the Linux script `assemble` is intended for my personal use. Don't run it before reading it.
 
 ## Screenshot
-![colorsquares.asm](snap/colorsquares.png)
+![colorsquares.asm](snap.png)
 
 ## Technical info
 * mapper: NROM (iNES mapper number 0)
