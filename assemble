@@ -1,0 +1,18 @@
+# For developer's personal use only!
+
+rm -f *.bin *.nes *.zip
+
+# optimize and encode graphics data
+pngout gfx/chr-bg.png -q
+python3 ../nes-util/nes_chr_encode.py chr-bg.png chr-bg.bin
+
+# assemble
+cd src
+asm6f colorsquares.asm ../colorsquares.nes
+cd ..
+
+# compress binary files
+7z a -mx9 -bd -bso0 bin.zip *.bin *.nes
+
+rm *.bin
+
