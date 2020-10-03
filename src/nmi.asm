@@ -8,7 +8,7 @@ nmi:
     copy_via_a moving_square1_x, square_x
     copy_via_a moving_square1_y, square_y
 
-    ; read & push tile number and attribute color (1-3)
+    ; read & push tile number and attribute value
     jsr set_name_table_address  ; square_x, square_y -> X, A
     lda ppu_data                ; garbage read
     lda ppu_data
@@ -34,11 +34,11 @@ nmi:
 
     ; write new values
     pla
-    tay
-    jsr set_square_attribute        ; Y, square_x, square_y -> none
+;    tay
+;    jsr set_square_attribute        ; in: Y, square_x, square_y
     pla
-    tay
-    jsr write_square_to_name_table  ; Y, square_x, square_y -> none
+;    tay
+;    jsr write_square_to_name_table  ; in: Y, square_x, square_y
 
     ; access second square
     copy_via_a moving_square2_x, square_x
@@ -46,11 +46,11 @@ nmi:
 
     ; write new values
     pla
-    tay
-    jsr set_square_attribute        ; Y, square_x, square_y -> none
+;    tay
+;    jsr set_square_attribute        ; in: Y, square_x, square_y
     pla
-    tay
-    jsr write_square_to_name_table  ; Y, square_x, square_y -> none
+;    tay
+;    jsr write_square_to_name_table  ; in: Y, square_x, square_y
 
     reset_ppu_address_latch
     set_ppu_address $0000
@@ -63,12 +63,9 @@ nmi:
 ; --------------------------------------------------------------------------------------------------
 
 set_name_table_address:
-    ; Set VRAM address to top left tile of specified square in name table.
-    ; called by: nmi, write_square_to_name_table
-    ; in: square_x, square_y
-    ; out: X=high byte, A=low byte
-    ; scrambles: -
-
+    ; Set PPU address to top left tile of (square_x, square_y) in name table:
+    ;     $2000 + square_y * $40 + square_x * 2
+    ; Also return high byte of address in X, low byte in A.
     ; bits: square_y=0000ABCD, square_x=0000EFGH -> X=001000AB, A=CD0EFGH0
 
     bit ppu_status
@@ -77,7 +74,7 @@ set_name_table_address:
     lda square_y
     lsr
     lsr
-    ora #$20
+    ora #%00100000
     sta ppu_addr
     tax
 
@@ -235,3 +232,4 @@ shift_done2:
 and_masks:
     ; AND bitmasks for attribute table data
     hex fc f3 cf 3f
+

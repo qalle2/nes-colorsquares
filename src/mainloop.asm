@@ -1,38 +1,42 @@
 main_loop:
     branch_if_flag_clear nmi_done, main_loop
 
-    inc frame_counter
-    jsr pick_squares_to_swap
-
-    clear_flag nmi_done
-    jmp main_loop
-
-pick_squares_to_swap:
-    ; the location of the left or top square of the square pair to swap
+    ; get coordinates of squares to swap
     ldx frame_counter
     lda shuffle_data, x
-    tay
-    rept 4
-        lsr
-    endr
+    pha
+    ;
+    ; upper nybble -> X position of both squares
+    lsr
+    lsr
+    lsr
+    lsr
     sta moving_square1_x
     sta moving_square2_x
-    tya
+    ;
+    ; lower nybble -> Y position of both squares
+    pla
     and #%00001111
     sta moving_square1_y
     sta moving_square2_y
-
-    ; the another square of the pair is to the right or below on alternating frames
-    txa
+    ;
+    ; increment X or Y position of second square, depending on swap direction
+    ldx frame_counter
     and #%00000001
     tax
-    inc moving_square2_x, x  ; moving_square2_x or moving_square2_y
-    rts
+    inc moving_square2_x, x
+
+    inc frame_counter
+    clear_flag nmi_done
+    jmp main_loop
 
 shuffle_data:
     ; 256 bytes
-    ; upper nybble = X coordinate (0...e at even indexes, 0...f at odd indexes)
-    ; lower nybble = Y coordinate (0...d at even indexes, 0...c at odd indexes)
+    ; upper nybble = X position (0...e at even indexes, 0...f at odd indexes)
+    ; lower nybble = Y position (0...d at even indexes, 0...c at odd indexes)
+    ; Python 3:
+    ; " ".join(format(random.randrange(15 + i % 2) << 4 | random.randrange(14 - i % 2), "02x") for i in range(256))
+    ;
     hex  2b 35  c4 71  5c b0  46 15  c6 80  d2 18  dc 27  bb 84
     hex  c6 7c  8d 59  e7 f9  8c 46  54 fc  64 ab  04 46  88 83
     hex  2b 89  06 98  33 2c  42 b1  6a 04  43 34  75 66  61 65
@@ -49,3 +53,4 @@ shuffle_data:
     hex  78 c0  07 6b  13 f9  19 b2  45 63  65 c7  36 18  5b a1
     hex  65 f4  55 20  5b c0  cc 06  9b 54  08 79  91 2b  10 83
     hex  44 1c  90 d1  c1 aa  7b 66  7d 5c  08 5c  08 48  d5 17
+
