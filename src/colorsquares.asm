@@ -1,3 +1,5 @@
+; Color Squares
+
     ; value to fill unused areas with
     fillvalue $ff
 
@@ -14,9 +16,18 @@
 ; --- PRG ROM -------------------------------------------------------------------------------------
 
     org $c000  ; last 16 KiB of CPU memory space
+
     include "init.asm"
+
     include "mainloop.asm"
+
+    align $100
+identity_table:
+    identity_table_macro
+
+    align $100
     include "nmi.asm"
+
     pad $fffa
     dw nmi, reset, 0  ; interrupt vectors
 

@@ -1,4 +1,4 @@
-; Initialization
+; Color Squares - initialization
 
 reset:
     initialize_nes
@@ -103,10 +103,16 @@ reset:
 
 ; --------------------------------------------------------------------------------------------------
 
+background_palette:
+    db color_bg, color_fg0a, color_fg0b, color_fg0c
+    db color_bg, color_fg1a, color_fg1b, color_fg1c
+    db color_bg, color_fg2a, color_fg2b, color_fg2c
+    db color_bg, color_fg3a, color_fg3b, color_fg3c
+
 initial_name_table_data:
-    ; Each byte specifies the color of 4*1 squares.
-    ; The value of each 2-bit group is 1-3, so each nybble is one of: 1235679abdef
-    ; 14 * 4 = 56 bytes
+    ; 14*4 = 56 bytes, 1 byte = 4*1 squares, each 2-bit group = 1...3.
+    ; Note: within a byte, the most significant bit pair represents the *rightmost* square.
+    ; (That makes routines simpler.)
     ; Python 3:
     ; " ".join(format(sum(random.randint(1,3) << s for s in (0,2,4,6)), "x") for i in range(56))
     ;
@@ -125,17 +131,24 @@ initial_name_table_data:
     hex 6b 9f 66 ea
     hex a6 6f bb 9e
 
-background_palette:
-    hex 0f 12 14 16  ; black, blue, purple, red
-    hex 0f 18 1a 1c  ; black, yellow, green, teal
-    hex 0f 22 24 26  ; like 1st subpalette but lighter foreground colors
-    hex 0f 28 2a 2c  ; like 2nd subpalette but lighter foreground colors
+initial_attribute_data:
+    ; 7*8 = 56 bytes, 1 byte = 2*2 squares.
+    ; Python 3:
+    ; " ".join(format(random.randrange(256), "02x") for i in range(56))
+    ;
+    hex bc 5b 18 91 b1 f3 17 79
+    hex e9 0d 6e 73 2b 8d fb 64
+    hex 88 36 97 47 38 78 4b bc
+    hex c8 35 09 be 3a 21 93 ad
+    hex 99 c7 37 d6 14 9b 18 88
+    hex 14 1b 99 fb a7 5c f4 2a
+    hex 78 17 b6 43 0f 6e 29 f8
 
 write_8_tiles:
     ; Write 8*1 tiles to Name Table.
     ; Y: loop counter (set of 8*1 tiles)
     ; X: byte from name_table_data
-    ; tile number: 0000VCCH (V = top/bottom half, CC = color, H = left/right half)
+    ; tile number: 0000VCCH (V = top/bottom half, CC = square color, H = left/right half)
 
     ; top/bottom half OR mask -> temp (0000V000)
     tya
@@ -143,7 +156,7 @@ write_8_tiles:
     asl
     sta temp
 
-    ; write 4*2 tiles
+    ; write 4*2 tiles (read least significant bit pair first!)
     ;
     ldy #4
     txa
@@ -165,16 +178,4 @@ write_8_tiles:
     bne -
 
     rts
-
-initial_attribute_data:
-    ; 7 * 8 = 56 bytes
-    ; Python 3:
-    ; " ".join(format(random.randrange(256), "02x") for i in range(56))
-    hex bc 5b 18 91 b1 f3 17 79
-    hex e9 0d 6e 73 2b 8d fb 64
-    hex 88 36 97 47 38 78 4b bc
-    hex c8 35 09 be 3a 21 93 ad
-    hex 99 c7 37 d6 14 9b 18 88
-    hex 14 1b 99 fb a7 5c f4 2a
-    hex 78 17 b6 43 0f 6e 29 f8
 
